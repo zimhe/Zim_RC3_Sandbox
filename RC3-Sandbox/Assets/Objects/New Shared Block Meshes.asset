@@ -11,5 +11,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 513af0a9acd5fb949a9bd9c667a4e8de, type: 3}
   m_Name: New Shared Block Meshes
   m_EditorClassIdentifier: 
-  _selectedMesh: {fileID: 4300000, guid: e62bc92e26d6bee4e837229cbd75bd94, type: 3}
-  _defaultMesh: {fileID: 4300000, guid: e5ab250a730ce1a4dae20cde41ea1784, type: 3}
+  _selectedMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+  _defaultMesh: {fileID: 4300000, guid: e62bc92e26d6bee4e837229cbd75bd94, type: 3}

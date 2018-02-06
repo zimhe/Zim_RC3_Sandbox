@@ -40,6 +40,7 @@ namespace AppBase
             _rotation = _pivot.rotation.eulerAngles;
         }
 
+    
 
         /// <summary>
         /// 

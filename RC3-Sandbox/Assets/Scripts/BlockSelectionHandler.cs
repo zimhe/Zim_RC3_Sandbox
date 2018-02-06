@@ -40,7 +40,7 @@ public class BlockSelectionHandler : MonoBehaviour,ISelectionHandler
         _rigidbody.isKinematic = false;
         _meshFilter.mesh = _meshes.DefaultMesh;
         _meshRenderer.material = _materials.DefaultMaterial;
-        transform.localScale = new Vector3(_scaleDefault, _scaleDefault, _scaleDefault);
+        //transform.localScale = new Vector3(_scaleDefault, _scaleDefault, _scaleDefault);
     }
 
     public void OnSelected()
@@ -48,7 +48,7 @@ public class BlockSelectionHandler : MonoBehaviour,ISelectionHandler
         _rigidbody.isKinematic = true;
         _meshFilter.mesh = _meshes.SelectedMesh;
         _meshRenderer.material = _materials.SelectedMaterial;
-        transform.localScale = new Vector3(_scaleSelected, _scaleSelected, _scaleSelected);
+        //transform.localScale = new Vector3(_scaleSelected, _scaleSelected, _scaleSelected);
     }
 
     // Use this for initialization
