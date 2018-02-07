@@ -13,29 +13,36 @@ public class GraphManager : MonoBehaviour
     [SerializeField]
     private int countY = 5;
 
+    private float  MaxHeight = 0;
+
     private SharedBlockMaterials _sharedBlockMaterials;
 
-    [SerializeField]
     private Transform[] _sources;
     private Graph _graph;
     private Transform[] _blocks;
 
     private Vector3[] _vertices;
-    public GameObject _text;
-    private GameObject [] Tags;
+   
     int[] depths;
     private IEnumerable<int> sources;
 
     private List<List<int>> _VertSets;
+    private List<GameObject> lines;
 
     private Mesh mesh;
+
+    private Material LineMaterial;
+
+    [SerializeField] private float ScaleX = 1f;
+    private float ScaleY;
 
 
 
     // Use this for initialization
-    void awake()
+    void Awake()
     {
-        
+        ScaleY = Mathf.Sqrt(Mathf.Pow(ScaleX, 2) - Mathf.Pow(ScaleX / 2, 2));
+        _sources = MoveSource.GetSources();
     }
 
     void Start ()
@@ -44,11 +51,17 @@ public class GraphManager : MonoBehaviour
 	    _graph = GraphFactory.CreateGrid(countX, countY);
 
 	    depths = new int [_graph.VertexCount];
-	    //create block
-	    CreateBlocks();
+
+	    lines = new List<GameObject>();
+        //create block
+        CreateBlocks();
         //create mesh
 	    CreateMesh();
-    }
+
+	    GetMaxHeight();
+	   
+	    DrawLine();
+	}
 
     void CreateMesh()
     {
@@ -108,7 +121,6 @@ public class GraphManager : MonoBehaviour
     void CreateBlocks()
     {
         _blocks = new Transform[_graph.VertexCount];
-        Tags = new GameObject [_graph.VertexCount];
        
         int index = 0;
         for (int i = 0; i < countX; i++)
@@ -116,13 +128,21 @@ public class GraphManager : MonoBehaviour
             for (int j = 0; j < countY; j++,index ++)
             {
                 var obj = Instantiate(_blockPrefab, transform);
-                obj.localPosition = new Vector3(i, 0, j);
+                var v1 = new Vector3(i * ScaleX, 0f,j * ScaleY);
+                var v2 = new Vector3(i * ScaleX+ScaleX /2 ,0, j* ScaleY);
 
-                var txt = Instantiate(_text,transform);
-                txt.GetComponent< Transform >().localPosition = new Vector3(i, 0, j);
-
+                if (j % 2 != 0)
+                {
+                    //if (x < xSize)
+                    {
+                        obj.localPosition = v1;
+                    }
+                }
+                else
+                {
+                    obj.localPosition = v2;
+                }
                 _blocks[index] = obj;
-                Tags[index] = txt;
             }
         }
        // print(_blocks.Length);
@@ -131,15 +151,20 @@ public class GraphManager : MonoBehaviour
 	// Update is called once per frame
     void Update()
     {
+        _sources = MoveSource.GetSources();
         sources = GetSourceIndices();
+        GetMaxHeight();
 
         if (Input.GetKeyDown(KeyCode.Space) && sources.Count() != 0)
         {
             UpdateDepths();
-
             heightChangeForEachSource();
             Destroy(mesh);
             CreateMesh() ;
+            removeLines(); 
+            MaxHeight = 0;
+            GetMaxHeight();
+            DrawLine();
         }
     }
 
@@ -149,8 +174,6 @@ public class GraphManager : MonoBehaviour
 
         for (int i = 0; i < _blocks.Length; i++)
         {
-            Tags[i].GetComponent<TextMesh>().text = i + ":" + depths[i].ToString();
-            //scaleChangeOnDepth(depths, i);
             resetHeight(i);
         }
     }
@@ -290,6 +313,141 @@ public class GraphManager : MonoBehaviour
             }
         }
         return vertSet;
+    }
+
+    void DrawLine()
+    {
+        LineMaterial =new Material(Shader.Find("Sprites/Default"));
+        for (int v = 0, i = 0; i < countX; i++)
+        {
+            for (int j = 0; j < countY; j++,v++)
+            {
+                float LineWidth = 0.05f;
+
+                if (j==countY -1&&i==countX -1)
+                {
+                    continue;
+                }
+                if (j == countY - 1 )
+                {
+                    GameObject DrawLineTop = new GameObject();
+                    LineRenderer LineTop = DrawLineTop.AddComponent<LineRenderer>();
+                    LineTop.positionCount = 2;
+                    LineTop.SetPosition(0, _vertices[v]); LineTop.SetPosition(1, _vertices[v+countY]);
+
+                    var L0 = _vertices[v].y;
+                    var L1 = _vertices[v + countY].y;
+
+                    Color C0 = Color.Lerp(Color.black, Color.red, L0 / MaxHeight);
+                    Color C1 = Color.Lerp(Color.black, Color.red, L1 / MaxHeight);
+
+                    LineTop.material = LineMaterial;
+                    LineTop.SetWidth(LineWidth, LineWidth);
+
+                    LineTop.SetColors(C0, C1);
+
+                    DrawLineTop .name =  "Line " + i + j + "_" + 0;
+
+                    lines.Add(DrawLineTop);
+                    continue;
+                }
+                if (i == countX - 1)
+                {
+                    GameObject DrawLineRight = new GameObject();
+                    LineRenderer LineRight = DrawLineRight.AddComponent<LineRenderer>();
+                    LineRight.positionCount = 2;
+                    LineRight .SetPosition(0, _vertices[v]); LineRight .SetPosition(1, _vertices[v + 1]);
+
+                    var L0 = _vertices[v].y;
+                    var L1 = _vertices[v + 1].y;
+
+                    Color C0 = Color.Lerp(Color.black, Color.red, L0 / MaxHeight);
+                    Color C1 = Color.Lerp(Color.black, Color.red, L1 / MaxHeight);
+
+                    LineRight .material = LineMaterial;
+                    LineRight .SetWidth(LineWidth, LineWidth);
+
+                    LineRight .SetColors(C0, C1);
+
+                    DrawLineRight .name = "Line " + i + j + "_" + 0;
+
+                    lines.Add(DrawLineRight );
+                    continue;
+                }
+
+
+                GameObject DrawLine0 = new GameObject();
+                GameObject DrawLine1 = new GameObject();
+                GameObject DrawLine2 = new GameObject();
+                LineRenderer Line0 = DrawLine0.AddComponent<LineRenderer>();
+                LineRenderer Line1 = DrawLine1.AddComponent<LineRenderer>();
+                LineRenderer Line2 = DrawLine2.AddComponent<LineRenderer>();
+                Line0.positionCount = 2; Line1.positionCount = 2; Line2.positionCount = 2;
+
+
+                Line0.SetPosition(0, _vertices[v]); Line0.SetPosition(1, _vertices[v+1]);
+                var L0_0 = _vertices[v].y; var L0_1 = _vertices[v + 1].y;
+
+                Line1.SetPosition(0, _vertices[v]); Line1.SetPosition(1, _vertices[v + countY]);
+                var L1_0 = _vertices[v].y; var L1_1 = _vertices[v + countY].y;
+
+                float L2_0;
+                float L2_1;
+
+                if (j % 2 == 0)
+                {
+                    Line2.SetPosition(0, _vertices[v]); Line2.SetPosition(1, _vertices[v + countY + 1]);
+                    L2_0 = _vertices[v].y; L2_1 = _vertices[v + countY+1].y;
+                }
+                else
+                {
+                    Line2.SetPosition(0, _vertices[v + 1]); Line2.SetPosition(1, _vertices[v + countY]);
+                    L2_0 = _vertices[v+1].y; L2_1 = _vertices[v + countY].y;
+                }
+
+                Color C0_0 = Color.Lerp(Color.black, Color.red, L0_0 / MaxHeight);
+                Color C0_1 = Color.Lerp(Color.black, Color.red, L0_1 / MaxHeight);
+                Color C1_0 = Color.Lerp(Color.black, Color.red, L1_0 / MaxHeight);
+                Color C1_1 = Color.Lerp(Color.black, Color.red, L1_1/ MaxHeight);
+                Color C2_0= Color.Lerp(Color.black, Color.red, L2_0 / MaxHeight);
+                Color C2_1 = Color.Lerp(Color.black, Color.red, L2_1 / MaxHeight);
+
+                Material mat = LineMaterial;
+                Line0.material = mat; Line1.material = mat; Line2.material = mat;
+
+                Line0.SetWidth(LineWidth , LineWidth ); Line1.SetWidth(LineWidth , LineWidth ); Line2.SetWidth(LineWidth , LineWidth);
+                Line0.SetColors(C0_0, C0_1); Line1.SetColors(C1_0, C1_1); Line2.SetColors(C2_0, C2_1);
+
+                DrawLine0.name = "Line " + i+j+"_"+0;
+                DrawLine1.name = "Line " + i+j+"_"+1;
+                DrawLine2.name = "Line " + i+j+"_"+2;
+
+                lines.Add(DrawLine0);
+                lines.Add(DrawLine1);
+                lines.Add(DrawLine2);
+            }
+        }
+    }
+
+    void removeLines()
+    {
+        foreach (GameObject L in lines)
+        {
+            Destroy(L);
+        }
+        lines.Clear();
+    }
+
+    void GetMaxHeight()
+    {
+        foreach (Transform Src in _sources )
+        {
+            float _h = Src.position.y;
+            if (_h > MaxHeight)
+            {
+                MaxHeight = _h;
+            }
+        }
     }
 
     private void OnDrawGizmos()

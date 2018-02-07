@@ -308,6 +308,7 @@
     <Compile Include="Assets\Scripts\Behaviours\Camera\Pivot_Target.cs" />
     <Compile Include="Assets\Scripts\Behaviours\Camera\Zoom.cs" />
     <Compile Include="Assets\Scripts\Behaviours\Objects\MoveSource.cs" />
+    <Compile Include="Assets\Scripts\Behaviours\Objects\SourceHolder.cs" />
     <Compile Include="Assets\Scripts\BlockSelectionHandler.cs" />
     <Compile Include="Assets\Scripts\BlockSpawner.cs" />
     <Compile Include="Assets\Scripts\Graph\Graph.cs" />

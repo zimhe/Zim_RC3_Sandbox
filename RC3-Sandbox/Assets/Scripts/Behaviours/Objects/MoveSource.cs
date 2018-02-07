@@ -1,11 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Networking.Types;
 
 public class MoveSource : MonoBehaviour
 {
-    [SerializeField] private Transform[] Sources = new Transform[2];
+    [SerializeField] private Transform SourcePrefab;
+
+    private static List<Transform> Sources;
 
     [SerializeField] private float MoveSpeed = 0.3f;
 
@@ -22,10 +25,16 @@ public class MoveSource : MonoBehaviour
     int sourceID = 0;
     void Awake()
     {
-        
+        Sources = new List<Transform>();
+
+        Transform Source0 = Instantiate(SourcePrefab, transform);
+
+        Sources.Add(Source0);
     }
-	void Start () {
-		
+	void Start ()
+	{
+	    
+
 	}
 	
 	// Update is called once per frame
@@ -33,7 +42,7 @@ public class MoveSource : MonoBehaviour
 	{
 	    pivot.position = Vector3 .Lerp( pivot .position ,Sources[sourceID].position,0.1f);
 
-	    var x = Sources[sourceID].rotation.eulerAngles.x;
+	    var x = Sources [sourceID].rotation.eulerAngles.x;
 
 	    var z = Sources[sourceID].rotation.eulerAngles.z;
 
@@ -43,20 +52,53 @@ public class MoveSource : MonoBehaviour
 	    changeSource();
 	    moveSource();
 	    SourceLook();
-	   
+	    addSource();
+	    deletSource();
+
 	}
 
     void changeSource()
     {
         if (Input.GetKeyDown(KeyCode.F))
         {
-            if (sourceID < Sources.Length-1)
+            if (sourceID < Sources.Count-1)
             {
                 sourceID++;
             }
-            else if (sourceID ==Sources .Length-1)
+            else if (sourceID ==Sources .Count -1)
             {
                 sourceID = 0;
+            }
+        }
+    }
+
+    void addSource()
+    {
+        if (Input.GetKeyDown(KeyCode.V))
+        {
+            int L = Sources.Count ;
+            var S = Instantiate(Sources[sourceID], transform);
+            Sources.Add(S);
+        }
+    }
+
+    void deletSource()
+    {
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            if (Sources.Count > 1)
+            {
+                Destroy(Sources[sourceID].gameObject);
+                Sources.Remove(Sources[sourceID]);
+                if (sourceID > 0)
+                {
+                    sourceID = sourceID - 1;
+                }
+                else
+                {
+                    sourceID = 0 ;
+                }
+             
             }
         }
     }
@@ -91,7 +133,7 @@ public class MoveSource : MonoBehaviour
 
     void SourceLook()
     {
-        for (int i = 0; i < Sources.Length; i++)
+        for (int i = 0; i < Sources.Count; i++)
         {
             if (i == sourceID)
             {
@@ -106,21 +148,12 @@ public class MoveSource : MonoBehaviour
         }
     }
 
-    void LateUpdate()
+    public static Transform [] GetSources()
     {
-        //rotateSource();
+        return Sources.ToArray();
     }
 
-    void rotateSource()
-    {
-        _rotation = Sources[sourceID].rotation.eulerAngles;
-        if (Input.GetMouseButton(1))
-        {
-            _rotation.y += Input.GetAxis("Mouse X") * _sensitivity;
-            _rotation.x = Sources[sourceID].rotation.eulerAngles.x;
-        }
+    
 
-        var q = Quaternion.Euler(_rotation.x, _rotation.y, 0.0f);
-        Sources [sourceID ].rotation = Quaternion.Lerp(Sources [sourceID ].rotation, q, Time.deltaTime * _stiffness);
-    }
+
 }
